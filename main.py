@@ -50,3 +50,7 @@ def post_prediction():
     new = {'source': query_source, 'link': query_link, 'title': query_title, 'text': query_text, 'prediction': pred[0]}
     db_operations.insert_one(new)
     return jsonify(pred[0])
+
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0')
