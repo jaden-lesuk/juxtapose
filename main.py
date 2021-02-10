@@ -5,10 +5,11 @@ from model import *
 from flask_pymongo import PyMongo
 import json
 from bson import json_util
+from twitter_api import  *
 
 pipeline = joblib.load('./passagg.sav')
 
-app = Flask(__name__, static_folder='build', static_url_path='')
+app = Flask(__name__)
 CORS(app)
 app.config["MONGO_URI"] = "mongodb+srv://admin:735uK74dOMDBA@lesuk.8p4iy.mongodb.net/juxtapose?retryWrites=true&w=majority"
 mongo = PyMongo(app)
@@ -52,5 +53,12 @@ def post_prediction():
     return jsonify(pred[0])
 
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+@app.route('/api/v1/tweets')
+def twitter_stream():
+    tweets = retrieve_tweets()
+    output = [{
+            'id': tweet[0],
+            'user': tweet[1],
+            'text': tweet[2],
+            'prediction': int(tweet[3])} for tweet in tweets]
+    return jsonify(output)
