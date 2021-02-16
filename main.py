@@ -1,4 +1,4 @@
-from flask import Flask, abort, jsonify, request
+from flask import Flask, render_template, jsonify, request
 from flask_cors import CORS
 import joblib
 from model import *
@@ -9,7 +9,8 @@ from twitter_api import  *
 
 pipeline = joblib.load('./passagg.sav')
 
-app = Flask(__name__)
+# app = Flask(__name__)
+app = Flask(__name__, static_url_path='', static_folder='build', template_folder='build')
 CORS(app)
 app.config["MONGO_URI"] = "mongodb+srv://admin:735uK74dOMDBA@lesuk.8p4iy.mongodb.net/juxtapose?retryWrites=true&w=majority"
 mongo = PyMongo(app)
@@ -18,6 +19,11 @@ db_operations = mongo.db.predictions
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
+
+
+@app.route("/")
+def hello():
+    return render_template("index.html")
 
 
 @app.route("/api/v1/predictions")
@@ -47,7 +53,6 @@ def post_prediction():
     query = get_all_query(query_title, query_text)
     pred = pipeline.predict(query)
     pred = pred.tolist()
-
     new = {'source': query_source, 'link': query_link, 'title': query_title, 'text': query_text, 'prediction': pred[0]}
     db_operations.insert_one(new)
     return jsonify(pred[0])
